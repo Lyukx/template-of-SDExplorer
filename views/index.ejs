@@ -2,9 +2,70 @@
 <html>
   <head>
     <title><%= title %></title>
+    <!-- default.css -->
+    <link rel="stylesheet" href="stylesheets/style.css">
+    <!-- font-awesome project -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="javascripts/drawer.min.js"></script>
+    <!-- bootstrap -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/bootstrap-drawer.min.css">
   </head>
-<body>
-<div id="drawArea"></div>
+
+<!--
+<div class="box">
+    <div class="search">
+      <input type="search" id="search" placeholder="Search..." />
+      <button class="icon"><i class="fa fa-search"></i></button>
+    </div>
+</div>
+
+Show the drawer:
+$('.drawer').drawer('hide');
+$('.drawer').drawer('show');
+-->
+
+<body class="has-drawer"> <!-- add this class to your body for proper sizing -->
+    <div id="drawerExample" class="drawer dw-xs-5 fold" aria-labelledby="drawerExample">
+        <div class="drawer-contents">
+            <div class="drawer-heading">
+                <h2 class="drawer-title">Menu</h2>
+            </div>
+            <div class="drawer-body">
+                <p>
+                    This is a properly padded container for content in the
+                    drawer that isn't a navigation.
+                </p>
+                <a href="#">A Regular Link</a>
+            </div>
+            <ul class="drawer-nav">
+                <li role="presentation" class="active"><a href="#">Home</a></li>
+                <li role="presentation"><a href="#">Profile</a></li>
+                <li role="presentation"><a href="#">Messages</a></li>
+            </ul>
+            <div class="drawer-footer">
+                <small>&copy; Caroline Amaba</small>
+            </div>
+        </div>
+    </div>
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">WebSiteName</a>
+        </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="#">Page 1</a></li>
+          <li><a href="#">Page 2</a></li>
+          <li><a href="#">Page 3</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div id="drawArea"></div>
+</body>
+
 <script src="javascripts/d3.min.js"></script>
 <script src="javascripts/sd.js"></script>
 <script>
