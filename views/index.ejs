@@ -28,38 +28,78 @@ $('.drawer').drawer('show');
 -->
 
 <body class="has-drawer"> <!-- add this class to your body for proper sizing -->
-    <div id="drawerExample" class="drawer dw-xs-5 fold" aria-labelledby="drawerExample">
+    <div id="drawerExample" class="drawer dw-xs-3 fold" aria-labelledby="drawerExample">
         <div class="drawer-contents">
-            <div class="drawer-heading">
-                <h2 class="drawer-title">Menu</h2>
+
+            <!-- Search contents -->
+            <div id="search-contents">
+                <div class="drawer-heading">
+                    <div align="right"><button class="icon close"><i class="fa fa-times"></i></button></div>
+                    <h2 class="drawer-title">Search</h2>
+                </div>
+
+                <div class="drawer-body">
+                    <p>
+                        You can search by caller, callee or message
+                    </p>
+                    <div class="box">
+                        <div class="search">
+                          <input type="search" id="search-from" placeholder="From..." />
+                          <input type="search" id="search-to" placeholder="To..." />
+                          <input type="search" id="search-message" placeholder="Message..." />
+                          <button class="icon"><i class="fa fa-search"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="drawer-nav">
+                    <li role="presentation" class="active"><a href="#">Home</a></li>
+                    <li role="presentation"><a href="#">Profile</a></li>
+                    <li role="presentation"><a href="#">Messages</a></li>
+                </ul>
             </div>
-            <div class="drawer-body">
-                <p>
-                    This is a properly padded container for content in the
-                    drawer that isn't a navigation.
-                </p>
-                <a href="#">A Regular Link</a>
+
+            <!-- Filter contents -->
+            <div id="filter-contents">
+                <div class="drawer-heading">
+                    <div align="right"><button class="icon close"><i class="fa fa-times"></i></button></div>
+                    <h2 class="drawer-title">Filter</h2>
+                </div>
+
+                <div class="drawer-body">
+                    <p>
+                        Filter by objects / groups
+                    </p>
+                    <div class="filter-box">
+                        <div class="filter-item">
+                          <input type="filter-name" placeholder="Object/group..." />
+                          <button class="filter-add"><i class="fa fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <p></p>
+                    <button class="do-filter">Filter</button>
+                </div>
             </div>
-            <ul class="drawer-nav">
-                <li role="presentation" class="active"><a href="#">Home</a></li>
-                <li role="presentation"><a href="#">Profile</a></li>
-                <li role="presentation"><a href="#">Messages</a></li>
-            </ul>
-            <div class="drawer-footer">
-                <small>&copy; Caroline Amaba</small>
+
+            <!-- Info contents -->
+            <div id="info-contents">
+                <div class="drawer-heading">
+                    <div align="right"><button class="icon close"><i class="fa fa-times"></i></button></div>
+                    <h2 class="drawer-title">Info</h2>
+                </div>
             </div>
         </div>
     </div>
     <nav class="navbar navbar-default">
       <div class="container-fluid">
         <div class="navbar-header">
-          <a class="navbar-brand" href="#">WebSiteName</a>
+          <a class="navbar-brand" href="#">Pacman DEMO</a>
         </div>
         <ul class="nav navbar-nav">
-          <li class="active"><a href="#">Home</a></li>
-          <li><a href="#">Page 1</a></li>
-          <li><a href="#">Page 2</a></li>
-          <li><a href="#">Page 3</a></li>
+          <li><a href="#" id="search-btn">Search</a></li>
+          <li><a href="#" id="filter-btn">Filter</a></li>
+          <li><a href="#" id="compress-btn">Compress</a></li>
+          <li><a href="#" id="info-btn">Basic Info</a></li>
         </ul>
       </div>
     </nav>
@@ -68,6 +108,40 @@ $('.drawer').drawer('show');
 
 <script src="javascripts/d3.min.js"></script>
 <script src="javascripts/sd.js"></script>
+<script>
+    //jQuery scripts
+    $(document).ready(function(){
+        $("#search-btn").click(function(){
+            $('#search-contents').show();
+            $('#info-contents').hide();
+            $('#filter-contents').hide();
+            $('.drawer').drawer('show');
+        });
+
+        $("#filter-btn").click(function(){
+            $('#search-contents').hide();
+            $('#info-contents').hide();
+            $('#filter-contents').show();
+            $('.drawer').drawer('show');
+        });
+
+        $("#info-btn").click(function(){
+            $('#search-contents').hide();
+            $('#info-contents').show();
+            $('#filter-contents').hide();
+            $('.drawer').drawer('show');
+        });
+
+        $(".close").click(function(){
+            $('.drawer').drawer('hide');
+        });
+
+        $(".filter-add").click(function(){
+            console.log($(this).parent()[0]);
+            $(".filter-box").after("<div class='filter-item'><input type='filter-name' placeholder='Object/group...' /></div>");
+        });
+    });
+</script>
 <script>
     var urlObj = "http://localhost:3000/fetchObject";
     var urlGrp = "http://localhost:3000/fetchGroup";
