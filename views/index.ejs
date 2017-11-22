@@ -177,12 +177,16 @@ $('.drawer').drawer('show');
                 }
                 generateSearchItem(data[i]);
             }
+            $(".search-result-item").click(function(){
+                var messageId = $($(this).children()[0]).text();
+
+            });
         }
 
         function generateSearchItem(item){
             $("#search-result").append($("<li role='presentation' class='search-result-content'></li>")
                                         .append($("<button class='search-result-item'></button>")
-                                            .append($("<div class='message-id'></div>").text("#" + item.id))
+                                            .append($("<div class='message-id'></div>").text(item.id))
                                             .append($("<div class='message-from'></div>").text(item.from))
                                             .append($("<div class='message-to'></div>").text(item.to))
                                             .append($("<div class='message-content'></div>").text(item.message))));

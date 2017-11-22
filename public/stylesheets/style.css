@@ -101,6 +101,11 @@ body {
     color: #000000;
 }
 
+.message-id:before{
+    content:"#";
+    font-family: "Lucida Console", Courier, monospace
+}
+
 .message-from{
     padding-left: 12px;
     font-size: 12pt;
