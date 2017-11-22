@@ -10,6 +10,8 @@ var users = require('./routes/users');
 var fetchObject = require('./routes/fetchObject');
 var fetchGroup = require('./routes/fetchGroup');
 var fetchMessage = require('./routes/fetchMessage');
+var searchMessage = require('./routes/searchMessage');
+var getObjectName = require('./routes/getObjectName');
 
 var app = express();
 
@@ -30,6 +32,8 @@ app.use('/users', users);
 app.use('/fetchObject', fetchObject);
 app.use('/fetchGroup', fetchGroup);
 app.use('/fetchMessage', fetchMessage);
+app.use('/searchMessage', searchMessage);
+app.use('/getObjectName', getObjectName);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -28,7 +28,7 @@ $('.drawer').drawer('show');
 -->
 
 <body class="has-drawer"> <!-- add this class to your body for proper sizing -->
-    <div id="drawerExample" class="drawer dw-xs-3 fold" aria-labelledby="drawerExample">
+    <div id="drawerExample" class="drawer dw-xs-4 fold" aria-labelledby="drawerExample">
         <div class="drawer-contents">
 
             <!-- Search contents -->
@@ -47,15 +47,13 @@ $('.drawer').drawer('show');
                           <input type="search" id="search-from" placeholder="From..." />
                           <input type="search" id="search-to" placeholder="To..." />
                           <input type="search" id="search-message" placeholder="Message..." />
-                          <button class="icon"><i class="fa fa-search"></i></button>
                         </div>
+                        <p></p>
+                        <button class="icon do-search"><i class="fa fa-search"></i></button>
                     </div>
                 </div>
 
-                <ul class="drawer-nav">
-                    <li role="presentation" class="active"><a href="#">Home</a></li>
-                    <li role="presentation"><a href="#">Profile</a></li>
-                    <li role="presentation"><a href="#">Messages</a></li>
+                <ul class="drawer-nav" id="search-result">
                 </ul>
             </div>
 
@@ -73,9 +71,9 @@ $('.drawer').drawer('show');
                     <div class="filter-box">
                         <div class="filter-item">
                           <input type="filter-name" placeholder="Object/group..." />
-                          <button class="filter-add"><i class="fa fa-plus"></i></button>
                         </div>
                     </div>
+                    <button class="filter-add"><i class="fa fa-plus"></i></button>
                     <p></p>
                     <button class="do-filter">Filter</button>
                 </div>
@@ -137,9 +135,58 @@ $('.drawer').drawer('show');
         });
 
         $(".filter-add").click(function(){
-            console.log($(this).parent()[0]);
-            $(".filter-box").after("<div class='filter-item'><input type='filter-name' placeholder='Object/group...' /></div>");
+            //console.log($(this).parent()[0]);
+            $(".filter-box").append("<div class='filter-item'><input type='filter-name' placeholder='Object/group...' /></div>");
         });
+
+        $(".do-search").click(function(){
+            var from = $("#search-from").val();
+            var to = $("#search-to").val();
+            var message = $("#search-message").val();
+            var query = "messages?message[from]=" + from + "&message[to]=" + to + "&message[message]=" + message;
+            var urlSearch = "http://localhost:3000/searchMessage/" + query;
+
+            $("#search-result").empty();
+
+            d3.json(urlSearch, function(err, data){
+                var totalPageNum = Math.ceil(data.length / 10)
+                var result = "Find " + data.length + " messages. Display 1/" + totalPageNum + " page. "
+                $("#search-result").append($("<li role='presentation'></li>").text(result)
+                                    .append("<input id='search-result-goto'/>")
+                                    .append("<button id='do-search-result-goto'>Goto</button>"));
+
+                $("#do-search-result-goto").click(function(){
+                    var page = parseInt($("#search-result-goto").val())
+                    if(page > 0 && page <= totalPageNum){
+                        displaySearchResult(page, 10, data);
+                    }
+                });
+                displaySearchResult(1, 10, data);
+            });
+        });
+
+        function displaySearchResult(pageNum, pageSize, data){
+            $(".search-result-content").remove();
+            var start = pageSize * (pageNum - 1);
+            for(var i = start; i < start + pageSize; i++){
+                if(i >= data.length){
+                    break;
+                }
+                if(data[i].message.length > 38){
+                    data[i].message = data[i].message.substring(0, 38) + "...";
+                }
+                generateSearchItem(data[i]);
+            }
+        }
+
+        function generateSearchItem(item){
+            $("#search-result").append($("<li role='presentation' class='search-result-content'></li>")
+                                        .append($("<button class='search-result-item'></button>")
+                                            .append($("<div class='message-id'></div>").text("#" + item.id))
+                                            .append($("<div class='message-from'></div>").text(item.from))
+                                            .append($("<div class='message-to'></div>").text(item.to))
+                                            .append($("<div class='message-content'></div>").text(item.message))));
+        }
     });
 </script>
 <script>
