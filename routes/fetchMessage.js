@@ -13,7 +13,7 @@ router.get('/:page', function(req, res, next) {
     var page = parseInt(req.params.page);
     MongoClient.connect(url, function(err, db) {
         assert.equal(null, err);
-        db.collection("message_id").find({}).limit(PAGE_NUM).skip(page * PAGE_NUM).toArray(function(err, result){
+        db.collection("messages").find({}).limit(PAGE_NUM).skip(page * PAGE_NUM).toArray(function(err, result){
             if(err){
                 console.error(err);
                 res.statusCode = 500;

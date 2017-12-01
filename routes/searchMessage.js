@@ -13,7 +13,7 @@ router.get('/messages', function(req, res, next) {
     var message = req.query.message.message;
     MongoClient.connect(url, function(err, db) {
         assert.equal(null, err);
-        db.collection("message_id").find({message: new RegExp(message)}).toArray(function(err, result){
+        db.collection("messages").find({message: new RegExp(message)}).toArray(function(err, result){
             if(err){
                 console.error(err);
                 res.statusCode = 500;
