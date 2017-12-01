@@ -1,5 +1,6 @@
 //jQuery scripts
 function setupJquery(svg){
+    var MAX_STR_LENGTH = 38;
     var elementMap = svg.getElementMap();
     var elementSet = svg.getElementSet();
 
@@ -43,8 +44,18 @@ function setupJquery(svg){
         $("#search-result").empty();
 
         d3.json(urlSearch, function(err, data){
+            var temp = [];
+            for(var i = 0; i < data.length; i++){
+                if(svg.isMessageDisplayed(data[i])){
+                    temp.push(data[i]);
+                }
+            }
+            data = temp;
             var totalPageNum = Math.ceil(data.length / 10)
             var result = "Find " + data.length + " messages. Display 1/" + totalPageNum + " page. "
+
+            displaySearchResult(1, 10, data);
+
             $("#search-result").append($("<li role='presentation'></li>").text(result)
                                 .append("<input id='search-result-goto'/>")
                                 .append("<button id='do-search-result-goto'>Goto</button>"));
@@ -55,7 +66,6 @@ function setupJquery(svg){
                     displaySearchResult(page, 10, data);
                 }
             });
-            displaySearchResult(1, 10, data);
         });
     });
 
@@ -81,8 +91,8 @@ function setupJquery(svg){
     }
 
     function useDotIfNameTooLong(name){
-        if(name.length > 42){
-            return name.substring(0, 42) + "...";
+        if(name.length > MAX_STR_LENGTH){
+            return name.substring(0, MAX_STR_LENGTH) + "...";
         }
         else{
             return name;
