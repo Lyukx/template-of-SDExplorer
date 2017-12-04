@@ -27,6 +27,22 @@ function setupJquery(svg){
         $('.drawer').drawer('show');
     });
 
+    var compressed = false;
+    var origin;
+    $("#compress-btn").click(function(){
+        if(!compressed){
+            origin = messages.slice();
+            var result = svg.compress();
+            svg = new sd.SDViewer(objects, groups, result[1]);
+            svg.setLoops(result[0]);
+            compressed = true;
+        }
+        else{
+            svg = new sd.SDViewer(objects, groups, origin);
+            compressed = false;
+        }
+    });
+
     $(".close").click(function(){
         $('.drawer').drawer('hide');
     });
@@ -34,7 +50,7 @@ function setupJquery(svg){
     var filterCount = 0;
     $("#filter-add").click(function(){
         filterCount ++;
-        $(".filter-box").append("<div class='filter-item'><input id='filter-" + filterCount + "' placeholder='Object/group...' /></div>");
+        $(".filter-box").append("<input class='typeahead' id='filter-" + filterCount + "' placeholder='Object/group...' />");
     });
 
     $("#filter-remove").click(function(){
@@ -57,9 +73,47 @@ function setupJquery(svg){
         }, "json");
     })
 
+    var substringMatcher = function(strs) {
+        return function findMatches(q, cb) {
+            var matches, substrRegex;
+
+            // an array that will be populated with substring matches
+            matches = [];
+
+            // regex used to determine if a string contains the substring `q`
+            substrRegex = new RegExp(q, 'i');
+
+            // iterate through the pool of strings and for any string that
+            // contains the substring `q`, add it to the `matches` array
+            $.each(strs, function(i, str) {
+                if (substrRegex.test(str)) {
+                    matches.push(str);
+                }
+            });
+
+            cb(matches);
+        };
+    };
+
+    $('.typeahead').typeahead({
+        hint: false,
+        highlight: true,
+        minLength: 1
+    },
+    {
+        name: 'objects',
+        source: substringMatcher(objectVocabulary)
+    });
+
     $(".do-search").click(function(){
         var from = $("#search-from").val();
+        if(from.length != 0){
+            from = objectMap.get($("#search-from").val());
+        }
         var to = $("#search-to").val();
+        if(to.length != 0){
+            to = objectMap.get($("#search-to").val());
+        }
         var message = $("#search-message").val();
         var query = "messages?message[from]=" + from + "&message[to]=" + to + "&message[message]=" + message;
         var urlSearch = "http://localhost:3000/searchMessage/" + query;
@@ -82,8 +136,6 @@ function setupJquery(svg){
 
             $("#search-result").empty();
 
-            displaySearchResult(1, 10, data);
-
             $("#search-result").append($("<li role='presentation'></li>").text(result)
                                 .append("<input id='search-result-goto'/>")
                                 .append("<button id='do-search-result-goto'>Goto</button>"));
@@ -94,6 +146,8 @@ function setupJquery(svg){
                     displaySearchResult(page, 10, data);
                 }
             });
+
+            displaySearchResult(1, 10, data);
         });
     });
 
@@ -108,7 +162,8 @@ function setupJquery(svg){
         }
         $(".search-result-item").click(function(){
             var messageId = parseInt($($(this).children()[0]).text());
-            var success = svg.locate(messageId);
+            var param = svg.getContext();
+            var success = svg.locate(messageId, param[4], param[5]);
             if(success){
                 $('.drawer').drawer('hide');
             }
@@ -116,15 +171,6 @@ function setupJquery(svg){
                 switchPage(messageId, svg);
             }
         });
-    }
-
-    function useDotIfNameTooLong(name){
-        if(name.length > MAX_STR_LENGTH){
-            return name.substring(0, MAX_STR_LENGTH) + "...";
-        }
-        else{
-            return name;
-        }
     }
 
     function generateSearchItem(item){
@@ -148,8 +194,9 @@ function switchPage(messageId, svg){
     var urlMsg = "http://localhost:3000/fetchMessage/" + page;
     d3.json(urlMsg, function(err, data) {
         messages = data;
+        var param = svg.getContext();
         svg = new sd.SDViewer(objects, groups, messages);
-        var success = svg.locate(messageId);
+        var success = svg.locate(messageId, param[4], param[5]);
         if(success){
             $('.drawer').drawer('hide');
         }
@@ -159,12 +206,23 @@ function switchPage(messageId, svg){
     });
 }
 
+function useDotIfNameTooLong(name){
+    if(name.length > MAX_STR_LENGTH){
+        return name.substring(0, MAX_STR_LENGTH) + "...";
+    }
+    else{
+        return name;
+    }
+}
+
 var urlObj = "http://localhost:3000/fetchObject";
 var urlGrp = "http://localhost:3000/fetchGroup";
 var urlMsg = "http://localhost:3000/fetchMessage/" + 0;
 var objects;
 var groups;
 var messages;
+var objectVocabulary;
+var objectMap;
 d3.json(urlObj, function(err, data) {
     if(err){
         console.log("Error while loading objects");
@@ -172,6 +230,12 @@ d3.json(urlObj, function(err, data) {
     }
     else{
         objects = data;
+        objectVocabulary = [];
+        objectMap = new Map();
+        for(let object of objects){
+            objectVocabulary.push(object.name + ":" + object.type);
+            objectMap.set(object.name + ":" + object.type, object.id);
+        }
         d3.json(urlGrp, function(err, data) {
             if(err){
                 console.log("Error while loading objects");

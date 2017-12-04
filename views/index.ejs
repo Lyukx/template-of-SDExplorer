@@ -12,6 +12,10 @@
     <script src="javascripts/bootstrap.min.js"></script>
     <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="stylesheets/bootstrap-drawer.min.css">
+    <!-- typeahead -->
+    <script src="javascripts/bloodhound.min.js"></script>
+    <script src="javascripts/typeahead.jquery.min.js"></script>
+    <script src="javascripts/typeahead.bundle.min.js"></script>
   </head>
 
 <body class="has-drawer"> <!-- add this class to your body for proper sizing -->
@@ -30,11 +34,9 @@
                         You can search by caller, callee or message
                     </p>
                     <div class="box">
-                        <div class="search">
-                          <input type="search" id="search-from" placeholder="From..." />
-                          <input type="search" id="search-to" placeholder="To..." />
-                          <input type="search" id="search-message" placeholder="Message..." />
-                        </div>
+                        <input type="search" class="typeahead" id="search-from" placeholder="From..." />
+                        <input type="search" class="typeahead" id="search-to" placeholder="To..." />
+                        <input type="search" id="search-message" placeholder="Message..." />
                         <p></p>
                         <button class="icon do-search"><i class="fa fa-search"></i></button>
                     </div>
@@ -56,9 +58,7 @@
                         Filter by objects / groups
                     </p>
                     <div class="filter-box">
-                        <div class="filter-item">
-                          <input id="filter-0" placeholder="Object/group..." />
-                        </div>
+                        <input class="typeahead" id="filter-0" placeholder="Object/group..." />
                     </div>
                     <button class="filter-button" id="filter-add"><i class="fa fa-plus"></i></button>
                     <button class="filter-button" id="filter-remove"><i class="fa fa-minus"></i></button>
@@ -83,9 +83,11 @@
         </div>
         <ul class="nav navbar-nav">
           <li><a href="#" id="search-btn">Search</a></li>
-          <li><a href="#" id="filter-btn">Filter</a></li>
           <li><a href="#" id="compress-btn">Compress</a></li>
+          <li><a href="#" id="filter-btn">Filter</a></li>
+          <!--
           <li><a href="#" id="info-btn">Basic Info</a></li>
+          -->
         </ul>
       </div>
     </nav>
