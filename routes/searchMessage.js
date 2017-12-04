@@ -11,10 +11,20 @@ router.get('/messages', function(req, res, next) {
     var from = req.query.message.from;
     var to = req.query.message.to;
     var message = req.query.message.message;
-    console.log(from);
+    var queryArray = [];
+    if(from.length != 0){
+        queryArray.push({from: parseInt(from)});
+    }
+    if(to.length != 0){
+        queryArray.push({to: parseInt(to)});
+    }
+    if(message.length != 0){
+        queryArray.push({message: new RegExp(message)});
+    }
+    var query = {$and : queryArray};
     MongoClient.connect(url, function(err, db) {
         assert.equal(null, err);
-        db.collection("messages").find({message: new RegExp(message)}).toArray(function(err, result){
+        db.collection("messages").find(query).toArray(function(err, result){
             if(err){
                 console.error(err);
                 res.statusCode = 500;
@@ -23,21 +33,7 @@ router.get('/messages', function(req, res, next) {
                     err:    err.code
                 });
             }
-            var data = [];
-            for(let msg of result){
-                if(from.length != 0){
-                    if(msg.from != parseInt(from)){
-                        continue;
-                    }
-                }
-                if(to.length != 0){
-                    if(msg.to != parseInt(to)){
-                        continue;
-                    }
-                }
-                data.push(msg);
-            }
-            res.send(data);
+            res.send(result);
             db.close();
         });
     });

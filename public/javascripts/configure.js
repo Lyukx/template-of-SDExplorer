@@ -51,6 +51,15 @@ function setupJquery(svg){
     $("#filter-add").click(function(){
         filterCount ++;
         $(".filter-box").append("<input class='typeahead' id='filter-" + filterCount + "' placeholder='Object/group...' />");
+        $('#filter-' + filterCount).typeahead({
+            hint: false,
+            highlight: true,
+            minLength: 1
+        },
+        {
+            name: 'objects',
+            source: substringMatcher(objectVocabulary)
+        });
     });
 
     $("#filter-remove").click(function(){
@@ -63,14 +72,13 @@ function setupJquery(svg){
     $(".do-filter").click(function(){
         var filterList = [];
         for(var i = 0; i <= filterCount; i++){
-            var filterName = $("#filter-" + i).val();
-            filterList.push(filterName);
+            var object = objectMap.get($("#filter-" + i).val());
+            if(object != undefined){
+                filterList.push(object);
+            }
         }
-        var urlSearch = "http://localhost:3000/searchMessage/"
-
-        $.post(urlSearch, { filterList }, function( data ) {
-            console.log( data );
-        }, "json");
+        console.log(filterList);
+        svg = new sd.SDViewer(filterList, [], messages);
     })
 
     var substringMatcher = function(strs) {
@@ -108,11 +116,11 @@ function setupJquery(svg){
     $(".do-search").click(function(){
         var from = $("#search-from").val();
         if(from.length != 0){
-            from = objectMap.get($("#search-from").val());
+            from = objectMap.get($("#search-from").val()).id;
         }
         var to = $("#search-to").val();
         if(to.length != 0){
-            to = objectMap.get($("#search-to").val());
+            to = objectMap.get($("#search-to").val()).id;
         }
         var message = $("#search-message").val();
         var query = "messages?message[from]=" + from + "&message[to]=" + to + "&message[message]=" + message;
@@ -223,6 +231,7 @@ var groups;
 var messages;
 var objectVocabulary;
 var objectMap;
+var objectMap_id;
 d3.json(urlObj, function(err, data) {
     if(err){
         console.log("Error while loading objects");
@@ -232,9 +241,11 @@ d3.json(urlObj, function(err, data) {
         objects = data;
         objectVocabulary = [];
         objectMap = new Map();
+        objectMap_id = new Map();
         for(let object of objects){
             objectVocabulary.push(object.name + ":" + object.type);
-            objectMap.set(object.name + ":" + object.type, object.id);
+            objectMap.set(object.name + ":" + object.type, object);
+            objectMap_id.set(object.id, object);
         }
         d3.json(urlGrp, function(err, data) {
             if(err){
