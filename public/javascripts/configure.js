@@ -1,8 +1,10 @@
 //jQuery scripts
+var MAX_STR_LENGTH = 38;
+var PAGE_NUM = 5000;
+
 function setupJquery(svg){
-    var MAX_STR_LENGTH = 38;
     var elementMap = svg.getElementMap();
-    var elementSet = svg.getElementSet();
+    var elements = svg.getElements();
 
     $("#search-btn").click(function(){
         $('#search-contents').show();
@@ -29,10 +31,31 @@ function setupJquery(svg){
         $('.drawer').drawer('hide');
     });
 
-    $(".filter-add").click(function(){
-        //console.log($(this).parent()[0]);
-        $(".filter-box").append("<div class='filter-item'><input type='filter-name' placeholder='Object/group...' /></div>");
+    var filterCount = 0;
+    $("#filter-add").click(function(){
+        filterCount ++;
+        $(".filter-box").append("<div class='filter-item'><input id='filter-" + filterCount + "' placeholder='Object/group...' /></div>");
     });
+
+    $("#filter-remove").click(function(){
+        if(filterCount > 0){
+            $("#filter-" + filterCount).parent().remove();
+            filterCount --;
+        }
+    });
+
+    $(".do-filter").click(function(){
+        var filterList = [];
+        for(var i = 0; i <= filterCount; i++){
+            var filterName = $("#filter-" + i).val();
+            filterList.push(filterName);
+        }
+        var urlSearch = "http://localhost:3000/searchMessage/"
+
+        $.post(urlSearch, { filterList }, function( data ) {
+            console.log( data );
+        }, "json");
+    })
 
     $(".do-search").click(function(){
         var from = $("#search-from").val();
@@ -42,17 +65,22 @@ function setupJquery(svg){
         var urlSearch = "http://localhost:3000/searchMessage/" + query;
 
         $("#search-result").empty();
+        $("#search-result").append("<div class='loader'></div>")
 
         d3.json(urlSearch, function(err, data){
             var temp = [];
+            searchResultMap = new Map();
             for(var i = 0; i < data.length; i++){
                 if(svg.isMessageDisplayed(data[i])){
                     temp.push(data[i]);
+                    searchResultMap.set(data[i].id, data[i].count);
                 }
             }
             data = temp;
             var totalPageNum = Math.ceil(data.length / 10)
             var result = "Find " + data.length + " messages. Display 1/" + totalPageNum + " page. "
+
+            $("#search-result").empty();
 
             displaySearchResult(1, 10, data);
 
@@ -79,13 +107,13 @@ function setupJquery(svg){
             generateSearchItem(data[i]);
         }
         $(".search-result-item").click(function(){
-            var messageId = $($(this).children()[0]).text();
+            var messageId = parseInt($($(this).children()[0]).text());
             var success = svg.locate(messageId);
             if(success){
                 $('.drawer').drawer('hide');
             }
             else{
-                console.log("This message is hidden by grouping");
+                switchPage(messageId, svg);
             }
         });
     }
@@ -112,6 +140,23 @@ function setupJquery(svg){
                                     )
                                   );
     }
+}
+
+var searchResultMap; // message id => message count
+function switchPage(messageId, svg){
+    var page = Math.floor(searchResultMap.get(messageId) / PAGE_NUM);
+    var urlMsg = "http://localhost:3000/fetchMessage/" + page;
+    d3.json(urlMsg, function(err, data) {
+        messages = data;
+        svg = new sd.SDViewer(objects, groups, messages);
+        var success = svg.locate(messageId);
+        if(success){
+            $('.drawer').drawer('hide');
+        }
+        else{
+            console.log("error!");
+        }
+    });
 }
 
 var urlObj = "http://localhost:3000/fetchObject";

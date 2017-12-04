@@ -6,7 +6,7 @@ var assert = require('assert');
 
 var url = 'mongodb://localhost:27017/pacManSequenceDiagram';
 
-var PAGE_NUM = 10000;
+var PAGE_NUM = 5000;
 
 /* GET home page. */
 router.get('/:page', function(req, res, next) {
@@ -23,6 +23,7 @@ router.get('/:page', function(req, res, next) {
                 });
             }
             res.send(result);
+            db.close();
         });
     });
 });

@@ -23,8 +23,34 @@ router.get('/messages', function(req, res, next) {
                 });
             }
             res.send(result);
+            db.close();
         });
     });
+});
+
+router.post('/', function(req, res){
+    var filterList = req.body['filterList'];
+    if(filterList == undefined){
+        console.log("err");
+        res.statusCode = 404;
+    }
+    else{
+        MongoClient.connect(url, function(err, db) {
+            assert.equal(null, err);
+            db.collection("groups").find({}).toArray(function(err, result){
+                if(err){
+                    console.error(err);
+                    res.statusCode = 500;
+                    res.send({
+                        result: 'error',
+                        err:    err.code
+                    });
+                }
+                res.send(result);
+                db.close();
+            });
+        });
+    }
 });
 
 module.exports = router;

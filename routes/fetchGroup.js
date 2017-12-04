@@ -20,6 +20,7 @@ router.get('/', function(req, res, next) {
                 });
             }
             res.send(result);
+            db.close();
         });
     });
 });
