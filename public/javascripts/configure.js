@@ -214,6 +214,10 @@ function switchPage(messageId, svg){
     });
 }
 
+function showNearBy(messageId, svg){
+
+}
+
 function useDotIfNameTooLong(name){
     if(name.length > MAX_STR_LENGTH){
         return name.substring(0, MAX_STR_LENGTH) + "...";
