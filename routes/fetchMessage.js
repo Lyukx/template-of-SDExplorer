@@ -4,7 +4,7 @@ var router = express.Router();
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 
-var url = 'mongodb://localhost:27017/pacManSequenceDiagram';
+var url = config.get('SDExplorerDemo.dbUri');
 
 var PAGE_NUM = 5000;
 
