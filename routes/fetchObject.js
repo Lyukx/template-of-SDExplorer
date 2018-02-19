@@ -4,6 +4,7 @@ var router = express.Router();
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 
+var config = require('config');
 var url = config.get('SDExplorerDemo.dbUri');
 
 /* GET home page. */
