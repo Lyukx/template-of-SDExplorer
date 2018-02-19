@@ -15,9 +15,6 @@ function Element(rawElement) {
     if(rawElement.type != undefined){ // objects
         this.displayName += (":" + rawElement.type);
     }
-    if(rawElement.displayName != undefined){
-        this.displayName = rawElement.displayName;
-    }
 
     // Grouping information
     this.parent = -1;
@@ -41,7 +38,7 @@ var PADDING_GROUP$1 = 10;
 
 var elementMap$1 = []; // [id => element]
 var display$1 = [];
-var displaySet$1;
+var displaySet$1 = new Set();
 
 function initElements(objects, groups) {
     elementMap$1 = new Map();
@@ -96,6 +93,17 @@ function ElementController(objects, groups){
     this.elementMap = elementMap$1;
     this.displaySet = displaySet$1;
 }
+
+ElementController.prototype.setElementOrder = function(newOrderedDisplay){
+    this.display = newOrderedDisplay;
+
+    // Decide the position of elements
+    var dist = PADDING$1;
+    for(var i = 0; i < display$1.length; i++){
+        display$1[i].x = dist;
+        dist += (display$1[i].width + PADDING$1);
+    }
+};
 
 ElementController.prototype.getGroupFoldInfo = function(){
     var groupFoldInfo = new Set();
@@ -182,7 +190,7 @@ ElementController.prototype.foldUpdateStatus = function(groupId){
 };
 
 function updateDisplaySet(){
-    displaySet$1 = new Set();
+    displaySet$1.clear();
     for(let element of display$1){
         if(!(element.isGroup() && !element.fold)){
             displaySet$1.add(element.id);
@@ -219,7 +227,7 @@ var totalMessages; // Total messages (from / to may be changed by grouping objec
 
 var rawValidMessages; // Used for compress
 
-var mainThreadSet;
+var mainThreadSet$1;
 
 function MessageController(messages, mainThreads, displaySet, elementMap){
     validMessages$1 = [];
@@ -227,8 +235,11 @@ function MessageController(messages, mainThreads, displaySet, elementMap){
     totalMessages = [];
     for(let message of messages){
         // Filter invalid messages
-        totalMessages.push(new Message(message));
-        originMessages.set(message.id, {from:message.from, to:message.to});
+        var thisMessage = new Message(message);
+        totalMessages.push(thisMessage);
+        if(!thisMessage.isReturn()){
+          originMessages.set(thisMessage.id, {from:thisMessage.from, to:thisMessage.to});
+        }
     }
 
     // if the message is from/to elements in a grouped group, change the from/to attribute
@@ -260,7 +271,7 @@ function MessageController(messages, mainThreads, displaySet, elementMap){
         }
     }
 
-    mainThreadSet = mainThreads;
+    mainThreadSet$1 = mainThreads;
     updateStatus();
 
     this.validMessages = validMessages$1;
@@ -334,7 +345,7 @@ function updateStatus() {
     }
 
     // Decide the position and scale of messages
-    validMessages$1 = [];
+    validMessages$1.length = 0;
     var enabledMessages = [];
     var activeStack = new ActiveStack();
     var messageMap = new Map(); // id => message
@@ -352,8 +363,8 @@ function updateStatus() {
             thisMessage.fromOffset = activeStack.getOffset(thisMessage.from);
             thisMessage.toOffset = activeStack.getOffset(thisMessage.to);
 
-            if(!thisMsg.valid){
-                enabledMessages.push(thisMsg);
+            if(!thisMessage.valid){
+                enabledMessages.push(thisMessage);
             }
             thisMessage.valid = true;
             validMessages$1.push(thisMessage);
@@ -379,7 +390,6 @@ function updateStatus() {
         message.scale = (distance + 1) / 2;
         count ++;
     }
-
     return enabledMessages;
 }
 
@@ -462,7 +472,7 @@ function updateStatus(){
 function ActiveStack(){
     this.stack = [];
     this.offset = new Map();
-    for (let mainThread of mainThreadSet){
+    for (let mainThread of mainThreadSet$1){
         this.offset.set(mainThread, 0);
     }
 }
@@ -516,6 +526,7 @@ var elementController;
 var messageController;
 
 var mainThread;
+var mainThreadSet;
 
 var display;
 var elementMap;
@@ -532,7 +543,7 @@ function SDController(objects, groups, messages){
     displaySet = elementController.displaySet;
 
     // TODO add multi-thread
-    var mainThreadSet = new Set([0]);
+    mainThreadSet = new Set([0]);
     var temp = elementMap.get(0);
     while(temp.parent != -1){
         mainThreadSet.add(temp.parent);
@@ -586,6 +597,20 @@ SDController.prototype.getRawMessages = function(){
 SDController.prototype.setLoops = function(loops){
     loopList = loops;
     drawLoops();
+};
+
+SDController.prototype.setMessages = function(messages) {
+    messageController = new MessageController(messages, mainThreadSet, displaySet, elementMap);
+    validMessages = messageController.validMessages;
+    d3.select(".messages-layout").remove();
+    d3.select("svg")
+        .append("g")
+        .attr("class", "messages-layout");
+    for(let message of validMessages){
+        drawMessage(message);
+    }
+    updateBaseLine();
+    updateMainThread();
 };
 
 function unfold(group){
@@ -799,6 +824,31 @@ SDController.prototype.updateWithoutAnimation = function(unfoldSet) {
             updateMessagesWithoutAnimation(enabled);
         }
     }
+};
+
+SDController.prototype.disableFoldAndUnfold = function() {
+    d3.selectAll(".element")
+      .each(function(element){
+        if(element.isGroup()){
+            d3.select(this).on("click", null);
+        }
+      });
+};
+
+SDController.prototype.enableFoldAndUnfold = function() {
+    d3.selectAll(".element")
+      .each(function(element){
+        if(element.isGroup()){
+            d3.select(this).on("click", function(element){
+                if(element.fold){
+                    unfold(element);
+                }
+                else{
+                    foldAll(element);
+                }
+            });
+        }
+      });
 };
 
 /********************************************************************************************************************
@@ -1276,10 +1326,7 @@ function updateMessages(enabled){
                 .attr("transform", "translate(" + Math.min(x1,x2) + "," + y2 + ")");
         });
 
-    var msgNum = sizeSetted && diagramStartMsg + diagramSizeY < validMessages.length ? diagramSizeY : validMessages.length;
-    var y2 = msgNum * MSG_HEIGHT + ELEMENT_HEIGHT + MSG_HEIGHT / 2;
-    d3.selectAll(".baseLine")
-        .attr("y2", y2);
+    updateBaseLine();
 
     updateMainThread();
 }
@@ -1342,10 +1389,7 @@ function updateMessagesWithoutAnimation(enabled){
                 .attr({x: -PADDING, y: -PADDING, width: 2 * PADDING + Math.abs(x2 - x1), height: 2 * PADDING + h2})
                 .attr("transform", "translate(" + Math.min(x1,x2) + "," + y2 + ")");
         });
-    var msgNum = sizeSetted && diagramStartMsg + diagramSizeY < validMessages.length ? diagramSizeY : validMessages.length;
-    var y2 = msgNum * MSG_HEIGHT + ELEMENT_HEIGHT + MSG_HEIGHT;
-    d3.selectAll(".baseLine")
-        .attr("y2", y2);
+    updateBaseLine();
 
     updateMainThread();
 }
@@ -1372,6 +1416,13 @@ function drawMainThread() {
 function updateMainThread(){
     d3.selectAll(".mainThreadActiveBar").remove();
     drawMainThread();
+}
+
+function updateBaseLine(){
+    var msgNum = sizeSetted && diagramStartMsg + diagramSizeY < validMessages.length ? diagramSizeY : validMessages.length;
+    var y2 = msgNum * MSG_HEIGHT + ELEMENT_HEIGHT + MSG_HEIGHT / 2;
+    d3.selectAll(".baseLine")
+        .attr("y2", y2);
 }
 
 function drawLoops(){
@@ -1572,9 +1623,11 @@ var oldScale;
 var displaySet$2;
 var elementMap$2;
 
-function SDViewer(objects, groups, messages) {
-    setSVG();
+function SDViewer(objects, groups, messages, drawAreaId) {
+    setSVG(drawAreaId);
     sdController = new SDController(objects, groups, messages);
+    // Save the raw message data in order to resume from compression
+    this.rawMessageBeforeComress = messages;
 
     sdController.setDiagramSize(diagramSizeX$1, diagramSizeY$1);
     sdController.setDiagramDisplayHead(headX, headY);
@@ -1621,92 +1674,19 @@ SDViewer.prototype.locate = function(messageId, scaleX, scaleY){
     }
 };
 
-SDViewer.prototype.showNearBy = function(messageId) {
-    var [elementIndex, messageIndex, elementPosition, messagePosition] = sdController.getIndexByMessageId(messageId);
-    var elements = this.getElements();
+SDViewer.prototype.nearby = function(message) {
+    // With a folded group A[a,b,c], 'display' should be [...other, A, other...]
+    // With a unfolded group A[a,b,c], 'display' should be [...other, A, a, b, c, other...]
+    var display = this.getElements();
     var messages = this.getMessages();
+    var initialElement = elementMap$2.get(message.from);
+    var initialMessageIndex = messages.indexOf(message);
 
-    var leftPointer = elementIndex - 1;
-    var rightPointer = elementIndex + 1;
     var handled = new Set();
-    handled.add(elementIndex);
-    for(var i = 0; i < 100; i++){
-        if(messageIndex - i >= 0){
-            var leftMsg = messages[messageIndex - i];
-            if(!handled.has(leftMsg.from)){
-                if(leftMsg.from > elementIndex){
-                    swapIdWithId(leftMsg.from, elements[leftPointer]);
-                    leftPointer --;
-                }
-                else{
-                    swapIdWithId(leftMsg.from, elements[rightPointer]);
-                    rightPointer ++;
-                }
-                handled.add(leftMsg.from);
-            }
-            if(!handled.has(leftMsg.to)){
-                if(leftMsg.to > elementIndex){
-                    swapIdWithId(leftMsg.to, elements[leftPointer]);
-                    leftPointer --;
-                }
-                else{
-                    swapIdWithId(leftMsg.to, elements[rightPointer]);
-                    rightPointer ++;
-                }
-                handled.add(leftMsg.to);
-            }
-        }
-        if(messageIndex + i < messages.length){
-            var rightMsg = messages[messageIndex + i];
-            if(!handled.has(rightMsg.from)){
-                if(rightMsg.from > elementIndex){
-                    swapIdWithId(rightMsg.from, elements[leftPointer]);
-                    leftPointer --;
-                }
-                else{
-                    swapIdWithId(rightMsg.from, elements[rightPointer]);
-                    rightPointer ++;
-                }
-                handled.add(rightMsg.from);
-            }
-            if(!handled.has(rightMsg.to)){
-                if(rightMsg.to > elementIndex){
-                    swapIdWithId(rightMsg.to, elements[leftPointer]);
-                    leftPointer --;
-                }
-                else{
-                    swapIdWithId(rightMsg.to, elements[rightPointer]);
-                    rightPointer ++;
-                }
-                handled.add(rightMsg.to);
-            }
-        }
-    }
+    for(var i = 0; i < 100; i++) {
 
-    var result = [];
-    for(let element in elements){
-        if(!element.isGroup()){
-            result.push(element);
-        }
     }
-
-    return result;
 };
-
-// 'id' is one element's id and 'element' is another element, this function swap the ids of 2 elements in Array 'elements'
-// Note that if anyone of the elements is a group, we should change the first object's id to make it work
-function swapIdWithId(id, element){
-    var tempId = element.id;
-    while(element.isGroup()){
-        element = elementMap$2.get(element.children[0]);
-    }
-    element.id = id;
-    var anotherElement = elementMap$2.get(id);
-    while(anotherElement.isGroup()){
-        anotherElement = elementMap$2.get(anotherElement.children[0]);
-    }
-    anotherElement.id = tempId;
-}
 
 SDViewer.prototype.getMessages = function() {
     return sdController.getMessages();
@@ -1744,7 +1724,18 @@ SDViewer.prototype.compress = function() {
             resultMessages.push(message);
         }
     }
+    sdController.setMessages(resultMessages);
+    sdController.setLoops(loopDetector.result[0]);
+
+    sdController.disableFoldAndUnfold();
+
     return [loopDetector.result[0], resultMessages];
+};
+
+SDViewer.prototype.decompress = function() {
+    sdController.setMessages(this.rawMessageBeforeComress);
+    d3.select(".loop-layout").remove();
+    sdController.enableFoldAndUnfold();
 };
 
 SDViewer.prototype.setLoops = function(loops) {
@@ -1805,7 +1796,7 @@ function keepElementTop() {
         .attr("transform", "translate(0," + (viewBoxY - sdController.top) + ")");
 }
 
-function setSVG(){
+function setSVG(drawAreaId){
     // Set svg zoomable and draggable
     width = window.innerWidth;
     height = window.innerHeight - 100;
@@ -1816,7 +1807,7 @@ function setSVG(){
     // Clear drawArea
     d3.select("svg").remove();
 
-    svg = d3.select("#drawArea")
+    svg = d3.select("#" + drawAreaId)
                     .append("svg")
                     .attr("width", width)
                     .attr("height", height)
