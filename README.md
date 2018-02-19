@@ -1,7 +1,7 @@
 # Template of SDExplorer
 - Homepage of SDExplorer: https://lyukx.github.io/SDExplorer/
 
-This is a template of SDExplorer demo using `node.js`, `express` and `mongodb`.
+This is a template of SDExplorer demo using `node.js`, `express` and `mongodb`. You can use this template to build large-scale Sequence diagrams using database.
 ## Quick Start
 1. Download or clone this repository:
 ```bash
