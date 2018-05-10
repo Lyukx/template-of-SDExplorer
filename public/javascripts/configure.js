@@ -74,7 +74,7 @@ function setupJquery(svg){
             }
         }
         console.log(filterList);
-        svg = new sd.SDViewer(filterList, [], messages);
+        svg = new sd.SDViewer(filterList, [], messages, "drawArea");
     })
 
     var substringMatcher = function(strs) {
@@ -199,7 +199,7 @@ function switchPage(messageId, svg){
     d3.json(urlMsg, function(err, data) {
         messages = data;
         var param = svg.getContext();
-        svg = new sd.SDViewer(objects, groups, messages);
+        svg = new sd.SDViewer(objects, groups, messages, "drawArea");
         var success = svg.locate(messageId, param[4], param[5]);
         if(success){
             $('.drawer').drawer('hide');
