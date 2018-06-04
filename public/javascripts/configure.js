@@ -265,7 +265,13 @@ d3.json(urlObj, function(err, data) {
                                  "groups" : groups,
                                  "messages" : messages
                              });
-                        svg = new sd.SDViewer(objects, groups, messages, "drawArea");
+                        svg = new sd.SDViewer({
+                          objects: objects,
+                          messages: messages,
+                          groups: groups,
+                          loops: [],
+                          drawAreaId: "drawArea"
+                        });
                         setupJquery(svg);
                     }
                 });

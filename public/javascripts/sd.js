@@ -199,25 +199,35 @@ function updateDisplaySet(){
 }
 
 function Message(rawMessage){
-    this.from = rawMessage.from;
-    this.to = rawMessage.to;
-    this.message = rawMessage.message;
-    this.id = rawMessage.id;
-    this.count = rawMessage.count;
-    this.valid = false;
-    this.scale = 1;
-    this.position = 0;
-    this.fromOffset = 0;
-    this.toOffset = 0;
+  this.from = rawMessage.from;
+  this.id = rawMessage.id;
+  this.count = rawMessage.count;
+  this.valid = false;
+  this.scale = 1;
+  this.position = 0;
+  this.fromOffset = 0;
+  this.toOffset = 0;
+  if(rawMessage.return != true){
+		if(rawMessage.to == -1){
+			this.return = true;
+		}
+		else{
+			this.to = rawMessage.to;
+    	this.message = rawMessage.message;
+		}
+  }
+  else{
+    this.return = rawMessage.return;
+  }
 }
 
 Message.prototype.equals = function(another){
-    // position doesn't need to be same
-    return (this.from == another.from && this.to == another.to && this.message == another.message);
+  // position doesn't need to be same
+  return (this.from == another.from && this.to == another.to && this.message == another.message);
 };
 
 Message.prototype.isReturn = function(){
-    return (this.to == -1 && this.message.length == 0)
+  return this.return == true;
 };
 
 var MSG_HEIGHT$1 = 80;
@@ -522,6 +532,22 @@ ActiveStack.prototype.getOffset = function(elementId){
     }
 };
 
+function Logger(){}
+
+Logger.prototype.output = function(log){
+  //console.log(log)
+};
+
+Logger.prototype.logFold = function(groupInfo){
+  var log = "Fold group: " + groupInfo.id + "@" + groupInfo.displayName;
+  this.output(log);
+};
+
+Logger.prototype.logUnfold = function(groupInfo){
+  var log = "Unfold group: " + groupInfo.id + "@" + groupInfo.displayName;
+  this.output(log);
+};
+
 var elementController;
 var messageController;
 
@@ -535,6 +561,8 @@ var displaySet;
 var validMessages;
 
 var loopList;
+
+var logger = new Logger();
 
 function SDController(objects, groups, messages){
     elementController = new ElementController(objects, groups);
@@ -618,6 +646,8 @@ function unfold(group){
     updateMessages(enabled);
 
     updateTopY();
+
+    logger.logUnfold(group);
 }
 
 function fold(group){
@@ -628,6 +658,8 @@ function fold(group){
     updateMessages([]); // When fold objects, no new message will appear
 
     updateTopY();
+
+    logger.logFold(group);
 }
 
 function allFolded(group) {
@@ -1625,18 +1657,29 @@ var oldScale;
 var displaySet$2;
 var elementMap$2;
 
-function SDViewer(objects, groups, messages, drawAreaId) {
-    setSVG(drawAreaId);
-    sdController = new SDController(objects, groups, messages);
+function SDViewer(parameters) {
+  if(parameters.objects == undefined || parameters.messages == undefined){
+    console.log("Error! Objects or messages undefined!");
+    return;
+  }
+
+  if(parameters.groups == undefined){
+    parameters.groups = [];
+  }
+  if(parameters.loops == undefined){
+    parameters.loops = [];
+  }
+
+    setSVG(parameters.drawAreaId);
+    sdController = new SDController(parameters.objects, parameters.groups, parameters.messages);
     // Save the raw message data in order to resume from compression
-    this.rawMessageBeforeComress = messages;
+    this.rawMessageBeforeComress = parameters.messages;
 
     sdController.setDiagramSize(diagramSizeX$1, diagramSizeY$1);
     sdController.setDiagramDisplayHead(headX, headY);
     sdController.drawWindow();
     displaySet$2 = sdController.getElementSet();
     elementMap$2 = sdController.getElementMap();
-		d3.select("#drawArea").selectAll("*").attr("stroke-width", "3");
 }
 
 SDViewer.prototype.isMessageDisplayed = function(message){
