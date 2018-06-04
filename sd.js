@@ -208,14 +208,8 @@ function Message(rawMessage){
   this.fromOffset = 0;
   this.toOffset = 0;
   if(rawMessage.return != true){
-    if(rawMessage.to == -1){
-      //support old format
-      this.return = true;
-    }
-    else{
-      this.to = rawMessage.to;
-      this.message = rawMessage.message;
-    }
+    this.to = rawMessage.to;
+    this.message = rawMessage.message;
   }
   else{
     this.return = rawMessage.return;
@@ -535,28 +529,17 @@ ActiveStack.prototype.getOffset = function(elementId){
 
 function Logger(){}
 
-// Output interface
 Logger.prototype.output = function(log){
-  console.log(log);
+  //console.log(log)
 };
 
 Logger.prototype.logFold = function(groupInfo){
-  var time = Date();
-  var log = {
-    time: time,
-    type: "Fold",
-    param: [groupInfo.id, groupInfo.displayName]
-  };
+  var log = "Fold group: " + groupInfo.id + "@" + groupInfo.displayName;
   this.output(log);
 };
 
 Logger.prototype.logUnfold = function(groupInfo){
-  var time = Date();
-  var log = {
-    time: time,
-    type: "Unfold",
-    param: [groupInfo.id, groupInfo.displayName]
-  };
+  var log = "Unfold group: " + groupInfo.id + "@" + groupInfo.displayName;
   this.output(log);
 };
 

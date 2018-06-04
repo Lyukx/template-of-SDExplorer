@@ -226,6 +226,7 @@ function useDotIfNameTooLong(name){
 var urlObj = "http://localhost:3000/fetchObject";
 var urlGrp = "http://localhost:3000/fetchGroup";
 var urlMsg = "http://localhost:3000/fetchMessage/" + 0;
+var urlLog = "http://localhost:3000/sendLogToDB";
 var objects;
 var groups;
 var messages;
@@ -272,6 +273,10 @@ d3.json(urlObj, function(err, data) {
                           loops: [],
                           drawAreaId: "drawArea"
                         });
+                        // add log function
+                        svg.logger.output = function(log){
+                          $.post( urlLog, log);
+                        };
                         setupJquery(svg);
                     }
                 });

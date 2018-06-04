@@ -12,6 +12,7 @@ var fetchGroup = require('./routes/fetchGroup');
 var fetchMessage = require('./routes/fetchMessage');
 var searchMessage = require('./routes/searchMessage');
 var getObjectName = require('./routes/getObjectName');
+var sendLogToDB = require('./routes/sendLogToDB');
 
 var app = express();
 
@@ -34,6 +35,7 @@ app.use('/fetchGroup', fetchGroup);
 app.use('/fetchMessage', fetchMessage);
 app.use('/searchMessage', searchMessage);
 app.use('/getObjectName', getObjectName);
+app.use('/sendLogToDB', sendLogToDB);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
