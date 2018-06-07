@@ -16,7 +16,7 @@ router.post('/', function(req, res) {
       if (err){
         console.log(err);
       }
-      console.log("1 log inserted.");
+      console.log("1 log inserted. " + log.time + " " + log.type);
       db.close();
     });
   });

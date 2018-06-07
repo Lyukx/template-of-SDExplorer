@@ -2,6 +2,8 @@
 var MAX_STR_LENGTH = 38;
 var PAGE_NUM = 5000;
 
+var logger_flag = true;
+
 function setupJquery(svg){
     var elementMap = svg.getElementMap();
     var elements = svg.getElements();
@@ -73,7 +75,15 @@ function setupJquery(svg){
                 filterList.push(object);
             }
         }
-        console.log(filterList);
+        //console.log(filterList);
+        if(logger_flag){
+          var time = new Date();
+          $.post( urlLog, {
+            time: time,
+            type: "Filter",
+            param: filterList
+          });
+        }
         svg = new sd.SDViewer(filterList, [], messages, "drawArea");
     })
 
@@ -124,6 +134,15 @@ function setupJquery(svg){
 
         $("#search-result").empty();
         $("#search-result").append("<div class='loader'></div>")
+
+        if(logger_flag){
+          var time = new Date();
+          $.post( urlLog, {
+            time: time,
+            type: "Search",
+            param: [from, to, message]
+          });
+        }
 
         d3.json(urlSearch, function(err, data){
             var temp = [];
@@ -223,6 +242,23 @@ function useDotIfNameTooLong(name){
     }
 }
 
+var t;
+var lastViewBox;
+function reportViewBox(){
+  var viewBox = d3.select("svg").attr("viewBox");
+  if(viewBox != lastViewBox){
+    lastViewBox = viewBox;
+    var time = Date();
+    $.post( urlLog, {
+      time: time,
+      type: "Viewbox",
+      param: [viewBox]
+    });
+  }
+
+  t = setTimeout("reportViewBox()", 1000);
+}
+
 var urlObj = "http://localhost:3000/fetchObject";
 var urlGrp = "http://localhost:3000/fetchGroup";
 var urlMsg = "http://localhost:3000/fetchMessage/" + 0;
@@ -274,9 +310,12 @@ d3.json(urlObj, function(err, data) {
                           drawAreaId: "drawArea"
                         });
                         // add log function
-                        svg.logger.output = function(log){
-                          $.post( urlLog, log);
-                        };
+                        if(logger_flag){
+                          svg.logger.output = function(log){
+                            $.post(urlLog, log);
+                          };
+                          reportViewBox();
+                        }
                         setupJquery(svg);
                     }
                 });

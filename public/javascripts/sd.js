@@ -537,7 +537,7 @@ function Logger(){}
 
 // Output interface
 Logger.prototype.output = function(log){
-  console.log(log);
+  //console.log(log);
 };
 
 Logger.prototype.logFold = function(groupInfo){
@@ -556,6 +556,16 @@ Logger.prototype.logUnfold = function(groupInfo){
     time: time,
     type: "Unfold",
     param: [groupInfo.id, groupInfo.displayName]
+  };
+  this.output(log);
+};
+
+Logger.prototype.logHinitbox = function(messageInfo){
+  var time = Date();
+  var log = {
+    time: time,
+    type: "Hintbox",
+    param: [messageInfo]
   };
   this.output(log);
 };
@@ -1246,6 +1256,7 @@ function drawMessage(message){
                     var curY = d3.mouse(this)[1];
                     d3.select(".hint-box").remove();
                     addHint(message.from, message.to, message.message, curX, curY);
+                    logger.logHinitbox(message.id);
                 }
                 else{
                     active = undefined;
@@ -1258,6 +1269,7 @@ function drawMessage(message){
                 var curX = d3.mouse(this)[0];
                 var curY = d3.mouse(this)[1];
                 addHint(message.from, message.to, message.message, curX, curY);
+                logger.logHinitbox(message.id);
             }
         });
 }
