@@ -10,14 +10,15 @@ var url = config.get('LogDB.dbUri');
 /* GET home page. */
 router.post('/', function(req, res) {
   MongoClient.connect(url, function(err, db) {
-    assert.equal(null, err);
+    console.log(err);
     var log = req.body;
-    db.collection("log").insertOne(log, function(err, res) {
+    db.collection("log").insertOne(log, function(err, dbRes) {
       if (err){
         console.log(err);
       }
       console.log("1 log inserted. " + log.time + " " + log.type);
       db.close();
+      res.end();
     });
   });
 });
