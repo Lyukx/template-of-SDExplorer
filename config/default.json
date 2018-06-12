@@ -1,7 +1,7 @@
 {
   "SDExplorerDemo": {
-    "dbUri": "mongodb://localhost:27017/pacManSequenceDiagram",
-    "demoName": "PacMan Demo"
+    "dbUri": "mongodb://localhost:27017/jHotDraw",
+    "demoName": "jHotDraw Demo"
   },
   "LogDB": {
     "dbUri": "mongodb://localhost:27017/userLog",
