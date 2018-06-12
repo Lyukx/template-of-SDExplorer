@@ -4,6 +4,7 @@
     "demoName": "PacMan Demo"
   },
   "LogDB": {
-    "dbUri": "mongodb://localhost:27017/userLog"
+    "dbUri": "mongodb://localhost:27017/userLog",
+    "enable": false
   }
 }

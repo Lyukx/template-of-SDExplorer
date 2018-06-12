@@ -9,18 +9,25 @@ var url = config.get('LogDB.dbUri');
 
 /* GET home page. */
 router.post('/', function(req, res) {
-  MongoClient.connect(url, function(err, db) {
-    console.log(err);
-    var log = req.body;
-    db.collection("log").insertOne(log, function(err, dbRes) {
-      if (err){
+  if(config.get('LogDB.enable')){
+    MongoClient.connect(url, function(err, db) {
+      if(err){
         console.log(err);
       }
-      console.log("1 log inserted. " + log.time + " " + log.type);
-      db.close();
-      res.end();
+      var log = req.body;
+      db.collection("log").insertOne(log, function(err, dbRes) {
+        if (err){
+          console.log(err);
+        }
+        console.log("1 log inserted. " + log.time + " " + log.type);
+        db.close();
+        res.end();
+      });
     });
-  });
+  }
+  else{
+    res.end();
+  }
 });
 
 module.exports = router;
