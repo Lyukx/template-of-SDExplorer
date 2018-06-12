@@ -84,7 +84,13 @@ function setupJquery(svg){
             param: filterList
           });
         }
-        svg = new sd.SDViewer(filterList, [], messages, "drawArea");
+        svg = new sd.SDViewer({
+          objects: filterList,
+          messages: messages,
+          groups: [],
+          loops: [],
+          drawAreaId: "drawArea"
+        });
     })
 
     var substringMatcher = function(strs) {
@@ -218,7 +224,13 @@ function switchPage(messageId, svg){
     d3.json(urlMsg, function(err, data) {
         messages = data;
         var param = svg.getContext();
-        svg = new sd.SDViewer(objects, groups, messages, "drawArea");
+        svg = new sd.SDViewer({
+          objects: objects,
+          messages: messages,
+          groups: groups,
+          loops: [],
+          drawAreaId: "drawArea"
+        });
         var success = svg.locate(messageId, param[4], param[5]);
         if(success){
             $('.drawer').drawer('hide');
