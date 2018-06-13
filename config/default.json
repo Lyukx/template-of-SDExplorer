@@ -1,6 +1,6 @@
 {
   "SDExplorerDemo": {
-    "dbUri": "mongodb://localhost:27017/jHotDraw",
+    "dbUri": "mongodb://localhost:27017/jHotDraw_slicing",
     "demoName": "jHotDraw Demo"
   },
   "LogDB": {
