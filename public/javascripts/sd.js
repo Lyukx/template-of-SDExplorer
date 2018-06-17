@@ -5,7 +5,7 @@
 }(this, (function (exports) { 'use strict';
 
 var ELEMENT_HEIGHT$2 = 40;
-var ELEMENT_CH_WIDTH$2 = 10;
+var ELEMENT_CH_WIDTH$2 = 8;
 var PADDING$2 = 20;
 
 function Element(rawElement) {
@@ -585,7 +585,7 @@ var displaySet;
 
 var validMessages;
 
-var loopList;
+var loopList = [];
 
 var logger = new Logger();
 
@@ -856,6 +856,9 @@ SDController.prototype.drawWindow = function() {
         }
         drawMessage(validMessages[i]);
     }
+
+    // draw loop
+    drawLoops();
 };
 
 SDController.prototype.clearAll = function() {
@@ -986,7 +989,8 @@ function drawElement(element){
     tempG.append("text")
          .text(function(d){ return element.displayName; })
          .attr("transform", "translate(" + element.width / 2 + "," + (element.height / 2 + ELEMENT_CH_HEIGHT) + ")")
-         .attr("text-anchor", "middle");
+         .attr("text-anchor", "middle")
+         .attr("font-family", "Consolas");
 
     // Move object to where it should be
     tempG.attr("class", "element")
@@ -1706,9 +1710,6 @@ function SDViewer(parameters) {
   if(parameters.groups == undefined){
     parameters.groups = [];
   }
-  if(parameters.loops == undefined){
-    parameters.loops = [];
-  }
 
     setSVG(parameters.drawAreaId);
     sdController = new SDController(parameters.objects, parameters.groups, parameters.messages);
@@ -1722,6 +1723,11 @@ function SDViewer(parameters) {
     elementMap$2 = sdController.getElementMap();
 
     this.logger = sdController.logger;
+
+  if(parameters.loops != undefined){
+    console.log(parameters.loops);
+    sdController.setLoops(parameters.loops);
+  }
 }
 
 SDViewer.prototype.isMessageDisplayed = function(message){
@@ -1821,6 +1827,7 @@ SDViewer.prototype.compress = function() {
 };
 
 SDViewer.prototype.decompress = function() {
+    this.setLoops([]);
     sdController.setMessages(this.rawMessageBeforeComress);
     d3.select(".loop-layout").selectAll("*").remove();
     sdController.enableFoldAndUnfold();
@@ -1919,6 +1926,8 @@ function setSVG(drawAreaId){
                             onDiagramMoved();
                         }
     	            }));
+    // Add initial state of svg
+    svg.attr("viewBox", "0 0 " + width + " " + height);
     // Disable double-click zoom
     svg.on("dblclick.zoom", null);
 

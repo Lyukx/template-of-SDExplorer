@@ -31,14 +31,27 @@ function setupJquery(svg){
 
     var compressed = false;
     $("#compress-btn").click(function(){
-        if(!compressed){
-            svg.compress();
-            compressed = true;
+      var top = getTopMessageInViewerWindow(svg);
+      var param = svg.getContext();
+      if(!compressed){
+        svg.compress();
+        compressed = true;
+      }
+      else{
+        svg.decompress();
+        compressed = false;
+      }
+      if(svg.isMessageDisplayed(top)){
+        svg.locate(top.id, param[4], param[5]);
+      }
+      else{
+        var messages = svg.getMessages();
+        for(var i = 0; i < messages.length; i++){
+          if(messages[i].count > top.count){
+            svg.locate(messages[i].id, param[4], param[5]);
+          }
         }
-        else{
-            svg.decompress();
-            compressed = false;
-        }
+      }
     });
 
     $(".close").click(function(){
@@ -241,8 +254,19 @@ function switchPage(messageId, svg){
     });
 }
 
-function showNearBy(messageId, svg){
+function getTopMessageInViewerWindow(svg){
+  var viewBoxY = svg.getContext()[3];
+  var messages = svg.getMessages();
+  for(var i = 0; i < messages.length; i++){
+    if(messages[i].position > (viewBoxY + 50)){
+      return messages[i];
+    }
+  }
+}
 
+function showNearBy(svg){
+  var top = getTopMessageInViewerWindow(svg);
+  console.log(top)
 }
 
 function useDotIfNameTooLong(name){
