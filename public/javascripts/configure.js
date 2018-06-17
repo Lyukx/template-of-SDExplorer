@@ -29,6 +29,10 @@ function setupJquery(svg){
         $('.drawer').drawer('show');
     });
 
+    $("#nearby-btn").click(function(){
+      showNearBy(svg);
+    })
+
     var compressed = false;
     $("#compress-btn").click(function(){
       var top = getTopMessageInViewerWindow(svg);
