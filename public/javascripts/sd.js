@@ -94,15 +94,16 @@ function ElementController(objects, groups){
     this.displaySet = displaySet$1;
 }
 
-ElementController.prototype.setElementOrder = function(newOrderedDisplay){
-    this.display = newOrderedDisplay;
-
-    // Decide the position of elements
-    var dist = PADDING$1;
-    for(var i = 0; i < display$1.length; i++){
-        display$1[i].x = dist;
-        dist += (display$1[i].width + PADDING$1);
+ElementController.prototype.updateAfterReOrder = function(){
+  var dist = PADDING$1;
+  for(let element of display$1){
+    element.x = dist;
+    if(element.isGroup() && !element.fold){
+      dist += PADDING_GROUP$1;
+    } else{
+      dist += (element.width + PADDING$1);
     }
+  }
 };
 
 ElementController.prototype.getGroupFoldInfo = function(){
@@ -657,6 +658,10 @@ SDController.prototype.setLoops = function(loops){
     drawLoops();
 };
 
+SDController.prototype.updateAfterReOrder = function(){
+  elementController.updateAfterReOrder();
+};
+
 SDController.prototype.setMessages = function(messages) {
     messageController = new MessageController(messages, mainThreadSet, displaySet, elementMap);
     validMessages = messageController.validMessages;
@@ -738,6 +743,11 @@ var diagramSizeY;
 var diagramStartEle;
 var diagramStartMsg;
 var sizeSetted = false; // this is the switch of sized window mode
+var hintMessage;
+
+SDController.prototype.getHint = function() {
+  return hintMessage;
+};
 
 SDController.prototype.setDiagramSize = function(x, y) {
     diagramSizeX = x;
@@ -868,6 +878,8 @@ SDController.prototype.clearAll = function() {
     d3.select(".mainthread-layout").remove();
     d3.select(".baseline-layout").remove();
 
+    d3.select(".hint-box").remove();
+    hintMessage = undefined;
     generateLayout();
 };
 
@@ -911,6 +923,20 @@ SDController.prototype.enableFoldAndUnfold = function() {
             });
         }
       });
+};
+
+SDController.prototype.addHintByFunc = function(message){
+  var from = elementMap.get(message.from);
+  var x = from.x + from.width;
+  var y = message.position + 40;
+  addHint(message.from, message.to, message.message, x, y);
+  d3.selectAll(".message")
+    .each(function(thisMessage){
+      if(thisMessage == message){
+        active = d3.select(this).select(".message-click-active-block");
+        active.style("fill-opacity", "0.4");
+      }
+    });
 };
 
 /********************************************************************************************************************
@@ -1274,11 +1300,13 @@ function drawMessage(message){
                     var curY = d3.mouse(this)[1];
                     d3.select(".hint-box").remove();
                     addHint(message.from, message.to, message.message, curX, curY);
+                    hintMessage = message;
                     logger.logHinitbox(message.id);
                 }
                 else{
                     active = undefined;
                     d3.select(".hint-box").remove();
+                    hintMessage = undefined;
                 }
             }
             else{
@@ -1287,6 +1315,7 @@ function drawMessage(message){
                 var curX = d3.mouse(this)[0];
                 var curY = d3.mouse(this)[1];
                 addHint(message.from, message.to, message.message, curX, curY);
+                hintMessage = message;
                 logger.logHinitbox(message.id);
             }
         });
@@ -1725,7 +1754,6 @@ function SDViewer(parameters) {
     this.logger = sdController.logger;
 
   if(parameters.loops != undefined){
-    console.log(parameters.loops);
     sdController.setLoops(parameters.loops);
   }
 }
@@ -1768,18 +1796,72 @@ SDViewer.prototype.locate = function(messageId, scaleX, scaleY){
     }
 };
 
+// Move <element> to position <index> in <display> array
+function moveElement(display, index, elementId){
+  var element = elementMap$2.get(elementId);
+  // move whole group if it is a group member
+  while(element.parent != -1){
+    element = elementMap$2.get(element.parent);
+  }
+
+  var childrenList = [];
+  // move all its children if it is an un-folded group
+  if(element.isGroup() && !element.fold){
+    var i = display.indexOf(element) + 1;
+    for(childrenNum = element.children.length; childrenNum > 0; childrenNum--){
+      if(display[i].isGroup() && !display[i].fold){
+        childrenNum += display[i].children.length;
+      }
+      display.splice(i, 1);
+    }
+  }
+  display.splice(display.indexOf(element), 1);
+  display.splice(index, 0, element);
+  if(childrenList.length != 0){
+    for(let i = 0; i < childrenList.length; i++){
+      display.splice(index + 1 + i, 0, childrenList[i]);
+    }
+  }
+}
+
+SDViewer.prototype.getHint = function() {
+  return sdController.getHint();
+};
+
+// Return nearby element lists, with sequencial order
 SDViewer.prototype.nearby = function(message) {
-    // With a folded group A[a,b,c], 'display' should be [...other, A, other...]
-    // With a unfolded group A[a,b,c], 'display' should be [...other, A, a, b, c, other...]
+  // While generated, the objects will be sorted by id (group with 1st element's id)
     var display = this.getElements();
     var messages = this.getMessages();
     var initialElement = elementMap$2.get(message.from);
     var initialMessageIndex = messages.indexOf(message);
 
     var handled = new Set();
-    for(var i = 0; i < 100; i++) {
-
+    var count = 0;
+    for(let i = 0; i < 50; i++) {
+      if(initialMessageIndex + i >= messages.length){
+        break;
+      }
+      var thisMessage = messages[initialMessageIndex + i];
+      if(!handled.has(thisMessage.from)){
+        handled.add(thisMessage.from);
+        moveElement(display, count, thisMessage.from);
+        count ++;
+      }
+      if(!handled.has(thisMessage.to)){
+        handled.add(thisMessage.to);
+        moveElement(display, count, thisMessage.to);
+        count ++;
+      }
     }
+    sdController.updateAfterReOrder();
+    updateSD(0, headY);
+    keepElementTop();
+    this.locate(message.id, width / oldScale, height / oldScale);
+};
+
+SDViewer.prototype.addHint = function(message) {
+  sdController.addHintByFunc(message);
 };
 
 SDViewer.prototype.getMessages = function() {

@@ -266,7 +266,13 @@ function getTopMessageInViewerWindow(svg){
 
 function showNearBy(svg){
   var top = getTopMessageInViewerWindow(svg);
-  console.log(top)
+  var hint = svg.getHint();
+  if(hint != undefined){
+    svg.nearby(hint);
+    svg.addHint(hint);
+  } else {
+    svg.nearby(top);
+  }
 }
 
 function useDotIfNameTooLong(name){
