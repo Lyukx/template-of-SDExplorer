@@ -85,14 +85,37 @@ function setupJquery(svg){
     });
 
     $(".do-filter").click(function(){
-        var filterList = [];
+        var filterSet = new Set();
         for(var i = 0; i <= filterCount; i++){
             var object = objectMap.get($("#filter-" + i).val());
             if(object != undefined){
-                filterList.push(object);
+                filterSet.add(object.id)
             }
         }
-        //console.log(filterList);
+        var filteredMessages = [];
+        var filteredMessageIdSet = new Set();
+        for(let message of messages){
+          if(filterSet.has(message.to)){
+            console.log(message);
+          }
+          if(filterSet.has(messages.from) || filterSet.has(messages.to)){
+            filteredMessages.push(message);
+            filteredMessageIdSet.add(message.id);
+          }
+
+          if(message.return == true){
+            if(filteredMessageIdSet.has(message.id)){
+              filteredMessages.push(message);
+            }
+          }
+        }
+        console.log(Array.from(filterSet));
+        console.log(filteredMessages);
+        var filterList = [];
+        for(let objectId of filterSet){
+          filterList.push(elementMap.get(objectId));
+        }
+
         if(logger_flag){
           var time = new Date();
           $.post( urlLog, {
@@ -101,9 +124,10 @@ function setupJquery(svg){
             param: filterList
           });
         }
+
         svg = new sd.SDViewer({
           objects: filterList,
-          messages: messages,
+          messages: filteredMessages,
           groups: [],
           loops: [],
           drawAreaId: "drawArea"
