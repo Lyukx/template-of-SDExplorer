@@ -1,0 +1,16 @@
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f0c"},"objs":[{"$numberInt":"8"},{"$numberInt":"9"}],"id":{"$numberInt":"45"},"name":"0:org/jhotdraw/geom/QuadTree"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f0d"},"objs":[{"$numberInt":"10"},{"$numberInt":"19"}],"id":{"$numberInt":"46"},"name":"0:org/jhotdraw/draw/action/ButtonFactory"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f0e"},"objs":[{"$numberInt":"15"}],"id":{"$numberInt":"47"},"name":"0:org/jhotdraw/draw/action/AbstractSelectedAction"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f0f"},"objs":[{"$numberInt":"16"},{"$numberInt":"17"}],"id":{"$numberInt":"48"},"name":"0:org/jhotdraw/draw/action/DefaultAttributeAction"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f10"},"objs":[{"$numberInt":"10"},{"$numberInt":"19"}],"id":{"$numberInt":"46"},"name":"0:org/jhotdraw/draw/action/ButtonFactory"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f11"},"objs":[{"$numberInt":"11"},{"$numberInt":"20"}],"id":{"$numberInt":"50"},"name":"0:org/jhotdraw/draw/DrawingEditorProxy"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f12"},"objs":[{"$numberInt":"4"},{"$numberInt":"23"}],"id":{"$numberInt":"51"},"name":"0:org/jhotdraw/draw/DefaultDrawingEditor"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f13"},"objs":[{"$numberInt":"30"},{"$numberInt":"31"},{"$numberInt":"32"},{"$numberInt":"33"},{"$numberInt":"34"}],"id":{"$numberInt":"52"},"name":"0:org/jhotdraw/draw/AttributeKeys"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f14"},"objs":[{"$numberInt":"30"},{"$numberInt":"31"},{"$numberInt":"32"},{"$numberInt":"33"},{"$numberInt":"34"}],"id":{"$numberInt":"52"},"name":"0:org/jhotdraw/draw/AttributeKeys"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f15"},"objs":[{"$numberInt":"30"},{"$numberInt":"31"},{"$numberInt":"32"},{"$numberInt":"33"},{"$numberInt":"34"}],"id":{"$numberInt":"52"},"name":"0:org/jhotdraw/draw/AttributeKeys"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f16"},"objs":[{"$numberInt":"30"},{"$numberInt":"31"},{"$numberInt":"32"},{"$numberInt":"33"},{"$numberInt":"34"}],"id":{"$numberInt":"52"},"name":"0:org/jhotdraw/draw/AttributeKeys"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f17"},"objs":[{"$numberInt":"29"},{"$numberInt":"38"}],"id":{"$numberInt":"56"},"name":"0:org/jhotdraw/draw/AbstractCompositeFigure"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f18"},"objs":[{"$numberInt":"5"},{"$numberInt":"40"}],"id":{"$numberInt":"57"},"name":"0:org/jhotdraw/draw/DefaultDrawingView"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f19"},"objs":[{"$numberInt":"7"},{"$numberInt":"44"}],"id":{"$numberInt":"58"},"name":"0:org/jhotdraw/draw/QuadTreeDrawing"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f1a"},"objs":[{"$numberInt":"12"},{"$numberInt":"13"}],"id":{"$numberInt":"59"},"name":"org/jhotdraw/beans/"}
+{"_id":{"$oid":"5b28ced6f9187c01de1a0f1b"},"objs":[{"$numberInt":"8"},{"$numberInt":"9"},{"$numberInt":"35"}],"id":{"$numberInt":"60"},"name":"org/jhotdraw/geom/"}
