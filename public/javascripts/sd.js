@@ -32,7 +32,7 @@ Element.prototype.isGroup = function () {
     return this.children.length != 0;
 };
 
-var ELEMENT_CH_WIDTH$1 = 10;
+var ELEMENT_CH_WIDTH$1 = 8;
 var PADDING$1 = 20;
 var PADDING_GROUP$1 = 10;
 
@@ -943,7 +943,7 @@ SDController.prototype.addHintByFunc = function(message){
 Rest part is the 'render' part, which contains functions to draw / modify elements on the SVG.
 *********************************************************************************************************************/
 var ELEMENT_HEIGHT = 40;
-var ELEMENT_CH_WIDTH = 10;
+var ELEMENT_CH_WIDTH = 8;
 var ELEMENT_CH_HEIGHT = 4;
 
 var PADDING = 20;
@@ -984,7 +984,7 @@ function generateLayout() {
 function drawElement(element){
     var tempG = d3.select(".objects-layout").append("g");
     // Draw a lifeline
-    var x = element.width / 2;
+    var x = (element.displayName.length * ELEMENT_CH_WIDTH + PADDING * 2) / 2;
     var msgNum = sizeSetted && diagramStartMsg + diagramSizeY < validMessages.length ? diagramSizeY : validMessages.length;
     var y1 = 0;
     var y2 = msgNum * MSG_HEIGHT + ELEMENT_HEIGHT + MSG_HEIGHT / 2;
@@ -1012,11 +1012,11 @@ function drawElement(element){
     }
 
     // Write names
-    tempG.append("text")
-         .text(function(d){ return element.displayName; })
-         .attr("transform", "translate(" + element.width / 2 + "," + (element.height / 2 + ELEMENT_CH_HEIGHT) + ")")
-         .attr("text-anchor", "middle")
-         .attr("font-family", "Consolas");
+    var text = tempG.append("text")
+                 .text(function(d){ return element.displayName; })
+                 .attr("transform", "translate(" + x + "," + (ELEMENT_HEIGHT / 2 + ELEMENT_CH_HEIGHT) + ")")
+                 .attr("text-anchor", "middle")
+                 .attr("font-family", "Consolas");
 
     // Move object to where it should be
     tempG.attr("class", "element")
@@ -1033,6 +1033,13 @@ function drawElement(element){
                  foldAll(thisGroup);
              }
          });
+    }
+
+    if(element.isGroup() && !element.fold){
+      tempG.style("fill-opacity", "0");
+
+      d3.select("#baseLine" + element.id)
+        .style("opacity", 0);
     }
 
     return tempG;
@@ -1809,20 +1816,22 @@ function moveElement(display, index, elementId){
   // move all its children if it is an un-folded group
   if(element.isGroup() && !element.fold){
     var i = display.indexOf(element) + 1;
-    for(childrenNum = element.children.length; childrenNum > 0; childrenNum--){
+    for(let childrenNum = element.children.length; childrenNum > 0; childrenNum--){
       if(display[i].isGroup() && !display[i].fold){
         childrenNum += display[i].children.length;
       }
+      childrenList.push(display[i]);
       display.splice(i, 1);
     }
   }
   display.splice(display.indexOf(element), 1);
   display.splice(index, 0, element);
   if(childrenList.length != 0){
-    for(let i = 0; i < childrenList.length; i++){
-      display.splice(index + 1 + i, 0, childrenList[i]);
+    for(let j = 0; j < childrenList.length; j++){
+      display.splice(index + 1 + j, 0, childrenList[j]);
     }
   }
+  return childrenList.length;
 }
 
 SDViewer.prototype.getHint = function() {
@@ -1846,12 +1855,12 @@ SDViewer.prototype.nearby = function(message) {
       var thisMessage = messages[initialMessageIndex + i];
       if(!handled.has(thisMessage.from)){
         handled.add(thisMessage.from);
-        moveElement(display, count, thisMessage.from);
+        count += moveElement(display, count, thisMessage.from);
         count ++;
       }
       if(!handled.has(thisMessage.to)){
         handled.add(thisMessage.to);
-        moveElement(display, count, thisMessage.to);
+        count += moveElement(display, count, thisMessage.to);
         count ++;
       }
     }
