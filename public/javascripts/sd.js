@@ -854,6 +854,10 @@ SDController.prototype.drawWindow = function() {
         drawElement(display[i]);
     }
 
+    if(!enableFold){
+      d3.selectAll(".element").on("click", null);
+    }
+
     updateTopY();
 
     // draw the main threads
@@ -900,29 +904,32 @@ SDController.prototype.updateWithoutAnimation = function(unfoldSet) {
     }
 };
 
+var enableFold = true;
 SDController.prototype.disableFoldAndUnfold = function() {
-    d3.selectAll(".element")
-      .each(function(element){
-        if(element.isGroup()){
-            d3.select(this).on("click", null);
-        }
-      });
+  enableFold = false;
+  d3.selectAll(".element")
+    .each(function(element){
+      if(element.isGroup()){
+        d3.select(this).on("click", null);
+      }
+    });
 };
 
 SDController.prototype.enableFoldAndUnfold = function() {
-    d3.selectAll(".element")
-      .each(function(element){
-        if(element.isGroup()){
-            d3.select(this).on("click", function(element){
-                if(element.fold){
-                    unfold(element);
-                }
-                else{
-                    foldAll(element);
-                }
-            });
-        }
-      });
+  enableFold = true;
+  d3.selectAll(".element")
+    .each(function(element){
+      if(element.isGroup()){
+        d3.select(this).on("click", function(element){
+          if(element.fold){
+            unfold(element);
+          }
+          else{
+            foldAll(element);
+          }
+        });
+      }
+    });
 };
 
 SDController.prototype.addHintByFunc = function(message){
@@ -1987,7 +1994,7 @@ function setSVG(drawAreaId){
     // Set svg zoomable and draggable
     width = window.innerWidth;
     height = window.innerHeight - 100;
-    curPos_x, curPos_y, mousePos_x, mousePos_y;
+    [curPos_x, curPos_y, mousePos_x, mousePos_y] = [0, 0, 0, 0];
     isMouseDown, oldScale = 1;
     viewBoxX = - 10;
     viewBoxY = - 10;
