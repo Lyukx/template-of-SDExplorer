@@ -238,6 +238,14 @@ function setupJquery(svg){
         }
         $(".search-result-item").click(function(){
             var messageId = parseInt($($(this).children()[0]).text());
+            if(logger_flag){
+              var time = new Date();
+              $.post( urlLog, {
+                time: time,
+                type: "Search-warp",
+                param: [messageId]
+              });
+            }
             var param = svg.getContext();
             var success = svg.locate(messageId, param[4], param[5]);
             if(success){
@@ -307,6 +315,17 @@ function showNearBy(svg){
   } else {
     svg.nearby(top);
   }
+
+  var begin = hint != undefined ? hint : top;
+  var type = hint != undefined ? "hint" : "top";
+  if(logger_flag){
+    var time = new Date();
+    $.post( urlLog, {
+      time: time,
+      type: "Nearby",
+      param: [begin, type]
+    });
+  }
 }
 
 function useDotIfNameTooLong(name){
@@ -319,16 +338,34 @@ function useDotIfNameTooLong(name){
 }
 
 var t;
-var lastViewBox;
+var lastScale;
+var lastPos;
+var width = window.innerWidth;
+var height = window.innerHeight - 100;
+
 function reportViewBox(){
   var viewBox = d3.select("svg").attr("viewBox");
-  if(viewBox != lastViewBox){
-    lastViewBox = viewBox;
+  var tokens = viewBox.split(" ");
+  var pos = tokens[0] + tokens[1];
+  var scale = tokens[2] + tokens[3];
+  if(scale != lastScale){
+    // usually a zoom operation will modify the position
+    lastScale = scale;
+    lastPos = pos;
     var time = Date();
     $.post( urlLog, {
       time: time,
-      type: "Viewbox",
-      param: [viewBox]
+      type: "Zoom",
+      param: [tokens[0], tokens[1], tokens[2] / width, tokens[3] / height]
+    });
+  }
+  else if(pos != lastPos){
+    lastPos = pos;
+    var time = Date();
+    $.post( urlLog, {
+      time: time,
+      type: "Move",
+      param: [tokens[0], tokens[1]]
     });
   }
 
@@ -387,6 +424,13 @@ d3.json(urlObj, function(err, data) {
                         });
                         // add log function
                         if(logger_flag){
+                          // Initial window size
+                          var time = Date();
+                          $.post( urlLog, {
+                            time: time,
+                            type: "InitSize",
+                            param: [width, height]
+                          });
                           svg.logger.output = function(log){
                             $.post(urlLog, log);
                           };
