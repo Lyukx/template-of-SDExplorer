@@ -40,10 +40,12 @@ function setupJquery(svg){
       if(!compressed){
         svg.compress();
         compressed = true;
+        $("#compress-btn").text("Decompress");
       }
       else{
         svg.decompress();
         compressed = false;
+        $("#compress-btn").text("Compress");
       }
       if(svg.isMessageDisplayed(top)){
         svg.locate(top.id, param[4], param[5]);
@@ -90,14 +92,29 @@ function setupJquery(svg){
         }
     });
 
+    var filtered = false;
     $(".do-filter").click(function(){
+      if(filtered){
+        filtered = false;
+        $(".do-filter").text("Filter")
+        svg = new sd.SDViewer({
+          objects: objects,
+          messages: messages,
+          groups: groups,
+          loops: [],
+          drawAreaId: "drawArea"
+        });
+      }
+      else{
+        filtered = true;
+        $(".do-filter").text("Cancel Filter")
         var filterSet = new Set();
         filterSet.add(objectMap.get("external[Mainthread]:"));
         for(var i = 0; i <= filterCount; i++){
-            var object = objectMap.get($("#filter-" + i).val());
-            if(object != undefined){
-                filterSet.add(object);
-            }
+          var object = objectMap.get($("#filter-" + i).val());
+          if(object != undefined){
+            filterSet.add(object);
+          }
         }
 
         var filterList = Array.from(filterSet);
@@ -116,6 +133,7 @@ function setupJquery(svg){
           loops: [],
           drawAreaId: "drawArea"
         });
+      }
     })
 
     var substringMatcher = function(strs) {
