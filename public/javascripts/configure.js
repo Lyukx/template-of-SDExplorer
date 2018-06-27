@@ -50,10 +50,16 @@ function setupJquery(svg){
       }
       else{
         var messages = svg.getMessages();
+        var flag = false;
         for(var i = 0; i < messages.length; i++){
           if(messages[i].count > top.count){
             svg.locate(messages[i].id, param[4], param[5]);
+            flag = true;
+            break;
           }
+        }
+        if(!flag){
+          svg.locate(messages[messages.length - 1].id, param[4], param[5]);
         }
       }
     });
