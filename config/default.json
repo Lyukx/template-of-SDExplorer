@@ -5,6 +5,7 @@
   },
   "LogDB": {
     "dbUri": "mongodb://localhost:27017/userLog",
-    "enable": false
+    "collection": "log",
+    "enable": true
   }
 }

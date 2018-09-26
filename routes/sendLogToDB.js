@@ -15,7 +15,7 @@ router.post('/', function(req, res) {
         console.log(err);
       }
       var log = req.body;
-      db.collection("log").insertOne(log, function(err, dbRes) {
+      db.collection(config.get('LogDB.collection')).insertOne(log, function(err, dbRes) {
         if (err){
           console.log(err);
         }
